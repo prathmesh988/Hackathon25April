@@ -1,0 +1,2 @@
+bun x biome ci .
+bun x turbo run build

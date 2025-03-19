@@ -1,0 +1,42 @@
+{
+  "name": "kaneo",
+  "private": false,
+  "type": "module",
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4",
+    "@commitlint/cli": "^19.6.1",
+    "@commitlint/config-conventional": "^19.6.0",
+    "husky": "^9.1.7",
+    "turbo": "^2.4.2",
+    "typescript": "5.5.4"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "bun@1.1.42",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "version": "0.1.0",
+  "dependencies": {
+    "@floating-ui/core": "^1.6.9",
+    "@floating-ui/dom": "^1.6.13",
+    "@floating-ui/utils": "^0.2.9",
+    "@radix-ui/react-arrow": "^1.1.2",
+    "@radix-ui/react-menu": "^2.1.6",
+    "@radix-ui/react-tooltip": "^1.1.8",
+    "@tiptap/extension-bubble-menu": "^2.11.5",
+    "@tiptap/extension-dropcursor": "^2.11.5",
+    "@tiptap/extension-horizontal-rule": "^2.11.5",
+    "@tiptap/extension-italic": "^2.11.5",
+    "@tiptap/pm": "^2.11.5",
+    "@tiptap/react": "^2.11.5",
+    "@tiptap/starter-kit": "^2.11.5"
+  }
+}
