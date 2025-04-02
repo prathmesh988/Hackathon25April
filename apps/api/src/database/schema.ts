@@ -133,3 +133,26 @@ export const activityTable = sqliteTable("activity", {
     }),
   content: text("content"),
 });
+
+export const googleAuthTable = sqliteTable("google_auth", {
+  id: text("id")
+    .$defaultFn(() => createId())
+    .primaryKey(),
+  userEmail: text("user_email")
+    .notNull()
+    .references(() => userTable.email, {
+      onDelete: "cascade",
+      onUpdate: "cascade",
+    })
+    .unique(),
+  accessToken: text("access_token").notNull(),
+  refreshToken: text("refresh_token"),
+  expiryDate: integer("expiry_date", { mode: "timestamp" }),
+  scope: text("scope"),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .default(new Date())
+    .notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" })
+    .default(new Date())
+    .notNull(),
+});

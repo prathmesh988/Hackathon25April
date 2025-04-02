@@ -5,7 +5,10 @@ import { workspaceUserTable } from "../../database/schema";
 async function inviteWorkspaceUser({
   workspaceId,
   userEmail,
-}: { workspaceId: string; userEmail: string }) {
+}: {
+  workspaceId: string;
+  userEmail: string;
+}) {
   const [existingUser] = await db
     .select()
     .from(workspaceUserTable)
@@ -25,6 +28,7 @@ async function inviteWorkspaceUser({
     .values({
       userEmail,
       workspaceId,
+      status: "active",
     })
     .returning();
 

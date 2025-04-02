@@ -12,7 +12,7 @@ const user = new Elysia({ prefix: "/user" })
     jwt({
       name: "sessionToken",
       secret: process.env.JWT_ACCESS ?? "hey45jk",
-    })
+    }),
   )
   .post(
     "/sign-in",
@@ -39,7 +39,7 @@ const user = new Elysia({ prefix: "/user" })
         email: t.String(),
         password: t.String(),
       }),
-    }
+    },
   )
   .post(
     "/sign-up",
@@ -69,7 +69,7 @@ const user = new Elysia({ prefix: "/user" })
         password: t.String(),
         name: t.String(),
       }),
-    }
+    },
   )
   .post("/sign-out", async ({ cookie, cookie: { session } }) => {
     await invalidateSession(session?.value ?? "");

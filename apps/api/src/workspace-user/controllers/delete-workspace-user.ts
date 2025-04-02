@@ -5,7 +5,10 @@ import { workspaceUserTable } from "../../database/schema";
 async function deleteWorkspaceUser({
   workspaceId,
   userEmail,
-}: { workspaceId: string; userEmail: string }) {
+}: {
+  workspaceId: string;
+  userEmail: string;
+}) {
   await db
     .delete(workspaceUserTable)
     .where(

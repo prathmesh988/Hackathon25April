@@ -13,7 +13,9 @@ const taskTitleSchema = z.object({
 
 function TaskTitle({
   setIsSaving,
-}: { setIsSaving: (isSaving: boolean) => void }) {
+}: {
+  setIsSaving: (isSaving: boolean) => void;
+}) {
   const { taskId } = Route.useParams();
   const { data: task } = useGetTask(taskId);
   const { mutateAsync: updateTask } = useUpdateTask();

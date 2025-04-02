@@ -39,3 +39,33 @@ yarn-error.log*
 
 # DB
 *.db
+
+# Docker
+*.yml
+
+# Logs
+*.log
+
+# IDE
+.idea
+
+# Bun
+.bun
+
+# Biome
+biome.json
+
+# Bun
+.bun
+
+# Biome
+biome.json
+
+# Bun
+.bun
+
+# Biome
+biome.json
+
+
+

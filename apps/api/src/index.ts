@@ -3,6 +3,8 @@ import { cors } from "@elysiajs/cors";
 import { cron } from "@elysiajs/cron";
 import { migrate } from "drizzle-orm/bun-sqlite/migrator";
 import { Elysia } from "elysia";
+import { google } from "googleapis";
+import { t } from "elysia";
 import activity from "./activity";
 import db from "./database";
 import project from "./project";
@@ -16,9 +18,27 @@ import workspaceUser from "./workspace-user";
 
 const isDemoMode = process.env.DEMO_MODE === "true";
 
+const oauth2Client = new google.auth.OAuth2(
+  "751756805538-476rtglo819us8sor11ita5bfqhgii31.apps.googleusercontent.com",
+  "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",
+  "http://localhost:1337/auth/google/callback",
+);
+
+const SCOPES = [
+  "https://www.googleapis.com/auth/calendar",
+  "https://www.googleapis.com/auth/calendar.events",
+];
+
 const app = new Elysia()
   .state("userEmail", "")
-  .use(cors())
+  .use(
+    cors({
+      origin: ["http://localhost:5173"], // Your frontend URL
+      credentials: true,
+      allowedHeaders: ["content-type"],
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    }),
+  )
   .use(user)
   .use(
     cron({
@@ -33,6 +53,135 @@ const app = new Elysia()
         }
       },
     }),
+  )
+  // Add Google OAuth routes
+  .get("/auth/google", () => {
+    const authUrl = oauth2Client.generateAuthUrl({
+      access_type: "offline",
+      scope: SCOPES,
+      prompt: "consent",
+    });
+
+    // Return a redirect response instead of JSON
+    return new Response(null, {
+      status: 302,
+      headers: {
+        Location: authUrl,
+      },
+    });
+  })
+  .get("/auth/google/callback", async ({ query }) => {
+    console.log("callback called");
+    const code = query.code as string | undefined;
+
+    if (!code) {
+      return new Response("No authorization code received", { status: 400 });
+    }
+
+    try {
+      const { tokens } = await oauth2Client.getToken(code);
+
+      return new Response(
+        `
+        <html>
+          <script>
+            const tokens = ${JSON.stringify(tokens)};
+            console.log("tokesnss" , tokens)
+            
+            
+            new Promise((resolve, reject) => {
+               window.opener.postMessage({ 
+                 type: 'google-auth-success', 
+                 tokens: tokens 
+               }, 'http://localhost:5173');
+              resolve(null);
+               }).then(()=>window.close());
+
+          </script>
+        </html>
+        `,
+        {
+          headers: { "Content-Type": "text/html" },
+        },
+      );
+    } catch (error) {
+      return new Response(
+        `
+        <html>
+          <script>
+            window.opener.postMessage({ type: 'google-auth-error' }, 'http://localhost:5173');
+            window.close();
+          </script>
+        </html>
+        `,
+        {
+          headers: { "Content-Type": "text/html" },
+        },
+      );
+    }
+  })
+  .get("/calendar/events", async ({ headers }) => {
+    try {
+      const authToken = headers["authorization"]?.split("Bearer ")[1];
+      if (!authToken) {
+        return new Response("No authorization token", { status: 401 });
+      }
+
+      const authClient = new google.auth.OAuth2();
+      authClient.setCredentials({ access_token: authToken });
+
+      const calendar = google.calendar({
+        version: "v3",
+        auth: authClient,
+      });
+
+      const response = await calendar.events.list({
+        calendarId: "primary",
+        timeMin: new Date().toISOString(),
+        maxResults: 10,
+        singleEvents: true,
+        orderBy: "startTime",
+      });
+
+      return { events: response.data.items };
+    } catch (error) {
+      return { error: "Failed to fetch calendar events" };
+    }
+  })
+  .post(
+    "/calendar/events",
+    async ({ body }) => {
+      try {
+        const calendar = google.calendar({ version: "v3", auth: oauth2Client });
+        const event = await calendar.events.insert({
+          calendarId: "primary",
+          requestBody: {
+            summary: (body as { summary: string }).summary,
+            description: (body as { description: string }).description,
+            start: {
+              dateTime: (body as { startTime: string }).startTime,
+              timeZone: "UTC",
+            },
+            end: {
+              dateTime: (body as { endTime: string }).endTime,
+              timeZone: "UTC",
+            },
+          },
+        });
+
+        return { success: true, event: event.data };
+      } catch (error) {
+        return { error: "Failed to create calendar event" };
+      }
+    },
+    {
+      body: t.Object({
+        summary: t.String(),
+        description: t.String(),
+        startTime: t.String(),
+        endTime: t.String(),
+      }),
+    },
   )
   .guard({
     async beforeHandle({ store, cookie: { session }, set }) {

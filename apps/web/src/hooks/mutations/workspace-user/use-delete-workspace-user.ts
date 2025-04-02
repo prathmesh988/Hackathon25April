@@ -7,8 +7,10 @@ function useDeleteWorkspaceUser() {
     mutationFn: ({
       workspaceId,
       userEmail,
-    }: { workspaceId: string; userEmail: string }) =>
-      deleteWorkspaceUser({ workspaceId, userEmail }),
+    }: {
+      workspaceId: string;
+      userEmail: string;
+    }) => deleteWorkspaceUser({ workspaceId, userEmail }),
   });
 }
 
