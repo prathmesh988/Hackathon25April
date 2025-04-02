@@ -20,7 +20,7 @@
     "drizzle-orm": "^0.40.0",
     "drizzle-typebox": "^0.2.0",
     "elysia": "1.2.25",
-    "googleapis": "^146.0.0"
+    "googleapis": "^148.0.0"
   },
   "devDependencies": {
     "bun-types": "latest"
