@@ -53,6 +53,7 @@ function CalendarPage() {
         },
       });
       const data = await response.json();
+      console.log("the data " , data)
       if (data.error) {
         setIsAuthenticated(false);
         return;

@@ -10,7 +10,6 @@ import {
 import { cn } from "@/lib/cn";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Clock } from "lucide-react";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -45,11 +44,13 @@ export default function AddEventForm() {
       const endDateTime = new Date(data.endDate);
       const [endHours, endMinutes] = data.endTime.split(":");
       endDateTime.setHours(parseInt(endHours), parseInt(endMinutes));
+      const tokens = JSON.parse(localStorage.getItem("googleTokens") || "{}");
 
-      const response = await fetch("/calendar/events", {
+      const response = await fetch("http://localhost:1337/calendar/events", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${tokens.access_token}`
         },
         body: JSON.stringify({
           summary: data.summary,

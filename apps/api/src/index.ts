@@ -15,6 +15,7 @@ import purgeData from "./utils/purge-demo-data";
 import setDemoUser from "./utils/set-demo-user";
 import workspace from "./workspace";
 import workspaceUser from "./workspace-user";
+import { auth } from "googleapis/build/src/apis/abusiveexperiencereport";
 
 const isDemoMode = process.env.DEMO_MODE === "true";
 
@@ -35,7 +36,7 @@ const app = new Elysia()
     cors({
       origin: ["http://localhost:5173"], // Your frontend URL
       credentials: true,
-      allowedHeaders: ["content-type"],
+      allowedHeaders: ["Authorization", "content-type"],
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     }),
   )
@@ -150,9 +151,17 @@ const app = new Elysia()
   })
   .post(
     "/calendar/events",
-    async ({ body }) => {
+    async ({ body, headers }) => {
       try {
-        const calendar = google.calendar({ version: "v3", auth: oauth2Client });
+        const authToken = headers["authorization"]?.split("Bearer ")[1];
+        if (!authToken) {
+          return new Response("No authorization token", { status: 401 });
+        }
+
+        const authClient = new google.auth.OAuth2();
+        authClient.setCredentials({ access_token: authToken });
+
+        const calendar = google.calendar({ version: "v3", auth: authClient });
         const event = await calendar.events.insert({
           calendarId: "primary",
           requestBody: {
@@ -160,11 +169,11 @@ const app = new Elysia()
             description: (body as { description: string }).description,
             start: {
               dateTime: (body as { startTime: string }).startTime,
-              timeZone: "UTC",
+              timeZone: "IST",
             },
             end: {
               dateTime: (body as { endTime: string }).endTime,
-              timeZone: "UTC",
+              timeZone: "IST",
             },
           },
         });
