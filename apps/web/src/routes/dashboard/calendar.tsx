@@ -75,6 +75,7 @@ function CalendarPage() {
     fetchEvents();
 
     const handleAuthMessage = async (event: MessageEvent) => {
+      console.log(event)
       if (event.origin !== apiUrl) return;
 
       if (event.data.type === "google-auth-success") {

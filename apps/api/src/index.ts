@@ -34,7 +34,7 @@ const app = new Elysia()
   .state("userEmail", "")
   .use(
     cors({
-      origin: ["http://localhost:5173"], // Your frontend URL
+      origin: ["http://localhost:5174"], // Your frontend URL
       credentials: true,
       allowedHeaders: ["Authorization", "content-type"],
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -94,7 +94,7 @@ const app = new Elysia()
                window.opener.postMessage({ 
                  type: 'google-auth-success', 
                  tokens: tokens 
-               }, 'http://localhost:5173');
+               }, 'http://localhost:5174');
               resolve(null);
                }).then(()=>window.close());
 
