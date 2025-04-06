@@ -28,14 +28,16 @@ function RouteComponent() {
     }
   }, [data, setWorkspace]);
 
-  if (projects && projects.length === 0) {
+  // Only show empty project state if we're not on the whiteboard route
+  const isWhiteboardRoute = window.location.pathname.includes('/whiteboard');
+  if (projects && projects.length === 0 && !isWhiteboardRoute) {
     return <EmptyProjectState />;
   }
 
   return (
     <>
       <Outlet />
-      {!project && <SelectProjectState />}
+      {!project && !isWhiteboardRoute && <SelectProjectState />}
     </>
   );
 }
