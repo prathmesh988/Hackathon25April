@@ -38,8 +38,11 @@
     "@tiptap/pm": "^2.11.5",
     "@tiptap/react": "^2.11.5",
     "@tiptap/starter-kit": "^2.11.5",
+    "@tldraw/sync": "^3.11.1",
     "@types/node-cron": "^3.0.11",
+    "fastify": "^5.2.2",
     "node-cron": "^3.0.3",
-    "node-schedule": "^2.1.1"
+    "node-schedule": "^2.1.1",
+    "tldraw": "^3.11.1"
   }
 }

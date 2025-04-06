@@ -26,7 +26,7 @@ function SignOutButton() {
       history.push("/auth/sign-in");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to sign out",
+        error instanceof Error ? error.message : "Failed to sign out"
       );
     }
   };
