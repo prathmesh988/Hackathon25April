@@ -1,7 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import db from "../../database";
 import { workspaceUserTable } from "../../database/schema";
-
 async function inviteWorkspaceUser({
   workspaceId,
   userEmail,
@@ -15,8 +14,8 @@ async function inviteWorkspaceUser({
     .where(
       and(
         eq(workspaceUserTable.workspaceId, workspaceId),
-        eq(workspaceUserTable.userEmail, userEmail),
-      ),
+        eq(workspaceUserTable.userEmail, userEmail)
+      )
     );
 
   if (existingUser) {

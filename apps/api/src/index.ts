@@ -16,13 +16,20 @@ import setDemoUser from "./utils/set-demo-user";
 import workspace from "./workspace";
 import workspaceUser from "./workspace-user";
 import { auth } from "googleapis/build/src/apis/abusiveexperiencereport";
-
+import { randomUUID ,createHash  } from 'crypto';
+import nodecron from "node-cron"
+import  type { ScheduledTask } from  "node-cron"
+type ScheduledJob = {
+  job: ScheduledTask;
+  targetTime: number; // 👈 This must match the key used in the object
+  message: string;
+};
 const isDemoMode = process.env.DEMO_MODE === "true";
 
 const oauth2Client = new google.auth.OAuth2(
   "751756805538-476rtglo819us8sor11ita5bfqhgii31.apps.googleusercontent.com",
   "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",
-  "http://localhost:1337/auth/google/callback",
+  "http://localhost:1337/auth/google/callback"
 );
 
 const SCOPES = [
@@ -32,13 +39,14 @@ const SCOPES = [
 
 const app = new Elysia()
   .state("userEmail", "")
+  .state('jobs', new Map<string, ScheduledJob>())
   .use(
     cors({
       origin: ["http://localhost:5174"], // Your frontend URL
       credentials: true,
       allowedHeaders: ["Authorization", "content-type"],
       methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    }),
+    })
   )
   .use(user)
   .use(
@@ -53,7 +61,7 @@ const app = new Elysia()
           await purgeData();
         }
       },
-    }),
+    })
   )
   // Add Google OAuth routes
   .get("/auth/google", () => {
@@ -103,7 +111,7 @@ const app = new Elysia()
         `,
         {
           headers: { "Content-Type": "text/html" },
-        },
+        }
       );
     } catch (error) {
       return new Response(
@@ -117,7 +125,7 @@ const app = new Elysia()
         `,
         {
           headers: { "Content-Type": "text/html" },
-        },
+        }
       );
     }
   })
@@ -150,37 +158,71 @@ const app = new Elysia()
     }
   })
   .post(
-    "/calendar/events",
-    async ({ body, headers }) => {
+    '/calendar/events',
+    async ({ body, headers, store }) => {
       try {
-        const authToken = headers["authorization"]?.split("Bearer ")[1];
+        const authToken = headers['authorization']?.split('Bearer ')[1];
         if (!authToken) {
-          return new Response("No authorization token", { status: 401 });
+          return new Response('No authorization token', { status: 401 });
         }
-
+  
         const authClient = new google.auth.OAuth2();
         authClient.setCredentials({ access_token: authToken });
-
-        const calendar = google.calendar({ version: "v3", auth: authClient });
+  
+        const calendar = google.calendar({ version: 'v3', auth: authClient });
+  
         const event = await calendar.events.insert({
-          calendarId: "primary",
+          calendarId: 'primary',
           requestBody: {
-            summary: (body as { summary: string }).summary,
-            description: (body as { description: string }).description,
+            summary: body.summary,
+            description: body.description,
             start: {
-              dateTime: (body as { startTime: string }).startTime,
-              timeZone: "IST",
+              dateTime: body.startTime,
+              timeZone: 'Asia/Kolkata',
             },
             end: {
-              dateTime: (body as { endTime: string }).endTime,
-              timeZone: "IST",
+              dateTime: body.endTime,
+              timeZone: 'Asia/Kolkata',
             },
           },
         });
-
+  
+        // --- CRON JOB SETUP ---
+        const hash = createHash('sha256')
+          .update(`${body.startTime}-${body.summary}-${body.description}`)
+          .digest('hex');
+        const jobId = `reminder-${hash.slice(0, 12)}`;
+  
+        const startTimestamp = new Date(body.startTime).getTime();
+        const executingTime = startTimestamp - 10 * 60 * 1000; // minus 10 minutes
+  
+        const job = nodecron.schedule('* * * * *', () => {
+          const now = Date.now();
+          const diff = Math.abs(now - executingTime);
+  
+          console.log(`[${jobId}] Checking if it's time to run...`);
+  
+          if (diff <= 60000) {
+            console.log(`[${jobId}] 🔔 Reminder triggered for event '${event.data.summary}'`);
+  
+            // 🧹 STOP & CLEANUP
+            job.stop();
+            store.jobs.delete(jobId);
+          }
+        });
+  
+        // Store the job
+        store.jobs.set(jobId, {
+          job,
+          targetTime: executingTime, // ✅ FIXED
+          message: event.data.summary || '',
+        });
+        
+  
         return { success: true, event: event.data };
       } catch (error) {
-        return { error: "Failed to create calendar event" };
+        console.error('Error creating calendar event:', error);
+        return { error: 'Failed to create calendar event' };
       }
     },
     {
@@ -190,7 +232,7 @@ const app = new Elysia()
         startTime: t.String(),
         endTime: t.String(),
       }),
-    },
+    }
   )
   .guard({
     async beforeHandle({ store, cookie: { session }, set }) {
@@ -200,7 +242,7 @@ const app = new Elysia()
         }
 
         const { user, session: validatedSession } = await validateSessionToken(
-          session.value ?? "",
+          session.value ?? ""
         );
 
         if (!user || !validatedSession) {
@@ -214,7 +256,7 @@ const app = new Elysia()
         }
 
         const { user, session: validatedSession } = await validateSessionToken(
-          session.value,
+          session.value
         );
 
         if (!user || !validatedSession) {
