@@ -58,10 +58,15 @@ function CalendarPage() {
         setIsAuthenticated(false);
         return;
       }
+
+      console.log(data.events)
       if (data.events) {
-        const ofiEvents = data.events.filter((event: CalendarEvent) =>
-          event.summary.startsWith("ofi_"),
-        );
+        const ofiEvents = data.events.filter((event: CalendarEvent) =>{
+          console.log( event.summary.startsWith("ofi_"))
+          return  event.summary.startsWith("ofi_")
+        }
+      );
+      console.log("the ofi events " ,ofiEvents)
         setEvents(ofiEvents);
         setIsAuthenticated(true);
       }
@@ -143,11 +148,13 @@ function CalendarPage() {
                 <CardTitle>Calendar</CardTitle>
               </CardHeader>
               <CardContent>
-                <Calendar selected={selectedDate} onSelect={setSelectedDate} />
+                <Calendar selected={selectedDate} onSelect={(e:any)=>{
+                  setSelectedDate(e.target.value)
+                }} />
                 <ul className="mt-4">
                   {filteredEvents.map((event) => (
                     <li key={event.id} className="p-2 border-b">
-                      <strong>{event.summary}</strong> -{" "}
+                      <strong>{event.summary.split("ofi_")[1]}</strong> -{" "}
                       {format(new Date(event.start.dateTime), "PPpp")}
                     </li>
                   ))}

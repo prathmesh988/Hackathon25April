@@ -84,6 +84,7 @@ function RouteComponent() {
 
   useEffect(() => {
     console.log(workspace?.id);
+    // console.log(workspace?.name);
   }, [workspace]);
 
   return (

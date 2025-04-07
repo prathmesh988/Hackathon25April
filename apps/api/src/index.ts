@@ -151,7 +151,7 @@ const app = new Elysia()
         singleEvents: true,
         orderBy: "startTime",
       });
-
+      console.log("the events are bruhh " , response.data.items);
       return { events: response.data.items };
     } catch (error) {
       return { error: "Failed to fetch calendar events" };
@@ -174,7 +174,7 @@ const app = new Elysia()
         const event = await calendar.events.insert({
           calendarId: 'primary',
           requestBody: {
-            summary: body.summary,
+            summary: "ofi_"+body.summary,
             description: body.description,
             start: {
               dateTime: body.startTime,
@@ -186,7 +186,26 @@ const app = new Elysia()
             },
           },
         });
-  
+
+      let url ="https://slink2.app.n8n.cloud/webhook/fd2089c4-2164-41e2-a344-4b4612a6ecea"
+       await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            phonenumber: '+919424644880',
+            name: body.summary,
+            message:body.description+ " , also recommend what to do in the event "
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          console.log('Success:', data);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
         // --- CRON JOB SETUP ---
         const hash = createHash('sha256')
           .update(`${body.startTime}-${body.summary}-${body.description}`)

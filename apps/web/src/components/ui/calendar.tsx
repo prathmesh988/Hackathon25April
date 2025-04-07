@@ -3,14 +3,49 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import type * as React from "react";
 import { DayPicker } from "react-day-picker";
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>;
+export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
+  events?: Array<{
+    start: { dateTime?: string; date?: string };
+    end: { dateTime?: string; date?: string };
+    summary: string;
+  }>;
+};
 
 function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  events = [],
   ...props
 }: CalendarProps) {
+  // Convert events to the format expected by react-day-picker
+  const modifiers = {
+    hasEvent: (date: Date) => {
+      return events.some((event) => {
+        const startDate = event.start.dateTime 
+          ? new Date(event.start.dateTime)
+          : event.start.date 
+            ? new Date(event.start.date)
+            : null;
+        const endDate = event.end.dateTime 
+          ? new Date(event.end.dateTime)
+          : event.end.date 
+            ? new Date(event.end.date)
+            : null;
+        
+        if (!startDate || !endDate) return false;
+        
+        // For all-day events (date only)
+        if (event.start.date) {
+          return date >= startDate && date < endDate;
+        }
+        
+        // For time-specific events
+        return date >= startDate && date <= endDate;
+      });
+    },
+  };
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -39,6 +74,7 @@ function Calendar({
           "aria-selected:opacity-100",
           "hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition-colors",
           "focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400",
+          "hasEvent:relative hasEvent:after:content-[''] hasEvent:after:absolute hasEvent:after:bottom-1 hasEvent:after:left-1/2 hasEvent:after:-translate-x-1/2 hasEvent:after:w-1 hasEvent:after:h-1 hasEvent:after:rounded-full hasEvent:after:bg-indigo-500"
         ),
         day_range_end: "day-range-end",
         day_selected:
@@ -51,6 +87,10 @@ function Calendar({
           "aria-selected:bg-zinc-100 dark:aria-selected:bg-zinc-800 aria-selected:text-zinc-900 dark:aria-selected:text-zinc-50",
         day_hidden: "invisible",
         ...classNames,
+      }}
+      modifiers={modifiers}
+      modifiersClassNames={{
+        hasEvent: "day_hasEvent",
       }}
       components={{
         IconLeft: () => <ChevronLeft className="h-4 w-4" />,
