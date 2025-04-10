@@ -1,3 +1,4 @@
+require('dotenv').config()
 import path from "node:path";
 import { cors } from "@elysiajs/cors";
 import { cron } from "@elysiajs/cron";
@@ -27,8 +28,8 @@ type ScheduledJob = {
 const isDemoMode = process.env.DEMO_MODE === "true";
 
 const oauth2Client = new google.auth.OAuth2(
-  "751756805538-476rtglo819us8sor11ita5bfqhgii31.apps.googleusercontent.com",
-  "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",
+  process.env.GOOGLE_AUTH_ID,
+  process.env.GOOGLE_AUTH_SECRET,
   "http://localhost:1337/auth/google/callback"
 );
 
