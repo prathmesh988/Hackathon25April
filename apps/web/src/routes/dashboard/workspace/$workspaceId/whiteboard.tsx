@@ -6,7 +6,7 @@ import {
 import useWorkspaceStore from "@/store/workspace";
 import "tldraw/tldraw.css";
 import { useSync } from "@tldraw/sync";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 
 export const Route = createFileRoute(
@@ -77,18 +77,40 @@ async function unfurlBookmarkUrl({ url }: { url: string }): Promise<TLBookmarkAs
 
 function RouteComponent() {
   const { workspace } = useWorkspaceStore();
+  const [connectionError, setConnectionError] = useState<string | null>(null);
+
   const store = useSync({
     uri: `${WORKER_URL}/connect/${workspace?.id || "default-room-id"}`,
     assets: multiplayerAssets
   });
 
   useEffect(() => {
-    console.log(workspace?.id);
-    // console.log(workspace?.name);
+    if (workspace?.id) {
+      console.log("Connecting to workspace:", workspace.name);
+    }
+    const handleError = () => {
+      setConnectionError("Could not connect to the whiteboard server. Please make sure the server is running.");
+    };
+    window.addEventListener('error', handleError);
+    return () => window.removeEventListener('error', handleError);
   }, [workspace]);
+
+  if (connectionError) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center p-4 bg-red-50 rounded-lg">
+          <p className="text-red-600">{connectionError}</p>
+          <p className="text-sm text-red-500 mt-2">Make sure the tldraw server is running on port 5858</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="tldraw__editor w-[100%] h-[100vh] relative">
+      <div className="absolute top-4 left-4 z-50 bg-white/80 backdrop-blur-sm rounded-lg p-2 shadow-lg">
+        <div className="text-sm font-medium">Workspace: {workspace?.name || 'Loading...'}</div>
+      </div>
       <Tldraw 
         store={store}
         onMount={(editor) => {
