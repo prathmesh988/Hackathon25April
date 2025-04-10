@@ -16,8 +16,7 @@ import purgeData from "./utils/purge-demo-data";
 import setDemoUser from "./utils/set-demo-user";
 import workspace from "./workspace";
 import workspaceUser from "./workspace-user";
-import { auth } from "googleapis/build/src/apis/abusiveexperiencereport";
-import { randomUUID ,createHash  } from 'crypto';
+import {  createHash  } from 'crypto';
 import nodecron from "node-cron"
 import  type { ScheduledTask } from  "node-cron"
 type ScheduledJob = {
@@ -195,7 +194,7 @@ const app = new Elysia()
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            phonenumber: '+919424644880',
+            phonenumber: process.env.PH,
             name: body.summary,
             message:body.description+ " , also recommend what to do in the event "
           })
