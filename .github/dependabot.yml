@@ -1,16 +1,1 @@
-version: 2
-updates:
-  - package-ecosystem: "npm"
-    directory: "/apps/api"
-    schedule:
-      interval: "daily"
 
-  - package-ecosystem: "npm"
-    directory: "/apps/web"
-    schedule:
-      interval: "daily"
-
-  - package-ecosystem: "npm"
-    directory: "/packages/libs"
-    schedule:
-      interval: "daily"
